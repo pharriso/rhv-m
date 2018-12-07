@@ -1,0 +1,33 @@
+---
+
+- name: Enable rhv-m repos 
+  rhsm_repository:
+    name: "{{ item }}"
+    state: enabled
+  with_items:
+    - rhel-7-server-rpms
+    - rhel-7-server-supplementary-rpms
+    - rhel-7-server-rhv-4.2-manager-rpms
+    - rhel-7-server-rhv-4-manager-tools-rpms
+    - rhel-7-server-ansible-2-rpms
+    - jb-eap-7-for-rhel-7-server-rpms
+  tags: rhv-m
+
+- name: Install rhvm package
+  yum:
+    name: rhvm
+    state: installed
+  tags: rhv-m
+
+- name: Template out rhvm answer file
+  template:
+    src: rhv-answers.txt.j2
+    dest: /root/rhv-answers.txt
+  tags: rhv-m
+
+- name: Install rhvm
+  shell: engine-setup --config-append=/root/rhv-answers.txt
+  args:
+    creates: /etc/systemd/system/multi-user.target.wants/ovirt-engine.service
+  tags: rhv-m
+
